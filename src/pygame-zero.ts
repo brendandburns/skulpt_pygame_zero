@@ -10,6 +10,7 @@ import {
   translateTools,
   resetPygameZero,
   handleCallbackError,
+  setActorPos,
 } from './utils'
 
 // Third-party plugins
@@ -95,14 +96,52 @@ window.$builtinmodule = function() {
     })
     $loc.width = defineProperty('sprite', 'width')
     $loc.height = defineProperty('sprite', 'height')
+    $loc.topright = defineProperty(function(self) {
+      return Sk.ffi.remapToPy(transPos([self.sprite.x + self.sprite.width/2, self.sprite.y - self.sprite.height/2], true))
+    }, function (self, val) {
+      setActorPos(self, Sk.ffi.remapToJs(val), self.sprite.width/2, -self.sprite.height/2);
+    });
+    $loc.topleft = defineProperty(function(self) {
+      return Sk.ffi.remapToPy(transPos([self.sprite.x - self.sprite.width/2, self.sprite.y - self.sprite.height/2], true))
+    }, function (self, val) {
+      setActorPos(self, Sk.ffi.remapToJs(val), -self.sprite.width/2, -self.sprite.height/2);
+    });
+    $loc.bottomleft = defineProperty(function(self) {
+      return Sk.ffi.remapToPy(transPos([self.sprite.x - self.sprite.width/2, self.sprite.y + self.sprite.height/2], true))
+    }, function (self, val) {
+      setActorPos(self, Sk.ffi.remapToJs(val), -self.sprite.width/2, self.sprite.height/2);
+    });
+    $loc.bottomright = defineProperty(function(self) {
+      return Sk.ffi.remapToPy(transPos([self.sprite.x + self.sprite.width/2, self.sprite.y + self.sprite.height/2], true))
+    }, function (self, val) {
+      setActorPos(self, Sk.ffi.remapToJs(val), self.sprite.width/2, self.sprite.height/2);
+    });
+    $loc.midleft = defineProperty(function(self) {
+      return Sk.ffi.remapToPy(transPos([self.sprite.x - self.sprite.width/2, self.sprite.y], true))
+    }, function (self, val) {
+      setActorPos(self, Sk.ffi.remapToJs(val), -self.sprite.width/2, 0);
+    });
+    $loc.midright = defineProperty(function(self) {
+      return Sk.ffi.remapToPy(transPos([self.sprite.x + self.sprite.width/2, self.sprite.y], true))
+    }, function (self, val) {
+      setActorPos(self, Sk.ffi.remapToJs(val), self.sprite.width/2, 0);
+    });
+    $loc.midtop = defineProperty(function(self) {
+      return Sk.ffi.remapToPy(transPos([self.sprite.x, self.sprite.y - self.sprite.height/2], true))
+    }, function (self, val) {
+      setActorPos(self, Sk.ffi.remapToJs(val), 0, -self.sprite.height/2);
+    });
+    $loc.midbottom = defineProperty(function(self) {
+      return Sk.ffi.remapToPy(transPos([self.sprite.x, self.sprite.y + self.sprite.height/2], true))
+    }, function (self, val) {
+      setActorPos(self, Sk.ffi.remapToJs(val), 0, self.sprite.height/2);
+    });
     $loc.pos = defineProperty(function(self) {
       return Sk.ffi.remapToPy(transPos([self.sprite.x, self.sprite.y], true))
     }, function (self, val) {
-      const pos = transPos(Sk.ffi.remapToJs(val))
-      self.sprite.x = pos[0];
-      self.sprite.y = pos[1];
-      self['sprite']['pos'] = [pos[0], pos[1]];
-    })
+      setActorPos(self, Sk.ffi.remapToJs(val), 0, 0);
+    });
+    $loc.center = $loc.pos;
     $loc.right = defineProperty((self) => {
       return Sk.ffiRemapToPy(transX(self.sprite.x, true) + self.sprite.width/2)
     }, (self, val) => {

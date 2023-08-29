@@ -257,3 +257,9 @@ export const defineProperty = function(obj, property) {
 export function handleCallbackError(err) {
   console.log(err);
 }
+
+export function setActorPos(actor, pos, dx, dy) {
+  actor.sprite.x = pos[0] + dx;
+  actor.sprite.y = pos[1] + dy ;
+  actor['sprite']['pos'] = [pos[0] + dx, pos[1] + dy];
+}
