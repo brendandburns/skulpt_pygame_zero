@@ -254,4 +254,6 @@ export const defineProperty = function(obj, property) {
   }))
 }
   
-
+export function handleCallbackError(err) {
+  console.log(err);
+}

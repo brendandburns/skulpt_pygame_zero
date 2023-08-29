@@ -9,6 +9,7 @@ import {
   genkwaFunc,
   translateTools,
   resetPygameZero,
+  handleCallbackError,
 } from './utils'
 
 // Third-party plugins
@@ -102,6 +103,26 @@ window.$builtinmodule = function() {
       self.sprite.y = pos[1];
       self['sprite']['pos'] = [pos[0], pos[1]];
     })
+    $loc.right = defineProperty((self) => {
+      return Sk.ffiRemapToPy(transX(self.sprite.x, true) + self.sprite.width/2)
+    }, (self, val) => {
+      self.sprite.x = transX(val.v, true) - self.sprite.width/2;
+    });
+    $loc.left = defineProperty((self) => {
+      return Sk.ffiRemapToPy(transX(self.sprite.x, true) - self.sprite.width/2)
+    }, (self, val) => {
+      self.sprite.x = transX(val.v, true) + self.sprite.width/2;
+    });
+    $loc.bottom = defineProperty((self) => {
+      return Sk.ffiRemapToPy(transY(self.sprite.y, true) + self.sprite.height/2)
+    }, (self, val) => {
+      self.sprite.y = transY(val.v, true) - self.sprite.height/2;
+    });
+    $loc.bottom = defineProperty((self) => {
+      return Sk.ffiRemapToPy(transY(self.sprite.y, true) - self.sprite.height/2)
+    }, (self, val) => {
+      self.sprite.y = transY(val.v, true) + self.sprite.height/2;
+    });
     $loc.angle = defineProperty('sprite', 'angle')
     $loc.show  = defineProperty('sprite', 'visible')
     $loc.image = defineProperty(function(self) {
@@ -141,7 +162,7 @@ window.$builtinmodule = function() {
       const z = Math.sqrt(x*x+y*y);
       return Sk.ffi.remapToPy(Math.round(Math.asin(y/z)/Math.PI*180))
     })
-    $loc.collide_point = new Sk.builtin.func(function(self, pos) {
+    $loc.collidepoint = new Sk.builtin.func(function(self, pos) {
       return hitTestRectangle(self.sprite, transPos(Sk.ffi.remapToJs(pos)))
     })
     $loc.collide_actor = new Sk.builtin.func(function(self, actor) {
@@ -322,12 +343,12 @@ window.$builtinmodule = function() {
     })
     $loc.schedule = new Sk.builtin.func(function(self, callback, delay) {
       ModuleCache.timerMap.set(callback, setTimeout(function() {
-        Sk.misceval.callsimAsync(null, callback)
+        Sk.misceval.callsimAsync(null, callback).then(() => {}, (err) => { handleCallbackError(err); })
       }, delay.v * 1000))
     })
     $loc.schedule_interval = new Sk.builtin.func(function(self, callback, delay) {
       ModuleCache.timerMap.set(callback, setInterval(function() {
-        Sk.misceval.callsimAsync(null, callback)
+        Sk.misceval.callsimAsync(null, callback).then(() => {}, (err) => { handleCallbackError(err); })
       }, delay.v * 1000))
     })
     $loc.schedule_unique = new Sk.builtin.func(function(self, callback, delay) {
@@ -336,7 +357,7 @@ window.$builtinmodule = function() {
         clearInterval(ModuleCache.timerMap.get(callback))
       }
       ModuleCache.timerMap.set(callback, setTimeout(function() {
-        Sk.misceval.callsimAsync(null, callback)
+        Sk.misceval.callsimAsync(null, callback).then(() => {}, (err) => { handleCallbackError(err); })
       }, delay.v * 1000))
     })
     $loc.unschedule = new Sk.builtin.func(function(self, callback, delay) {
@@ -469,8 +490,8 @@ window.$builtinmodule = function() {
 
   // 主循环
   app.ticker.add((delta) => {
-    Sk.globals.draw && Sk.misceval.callsimAsync(null, Sk.globals.draw);
-    Sk.globals.update && Sk.misceval.callsimAsync(null, Sk.globals.update);
+    Sk.globals.draw && Sk.misceval.callsimAsync(null, Sk.globals.draw).then(() => {}, (err) => { handleCallbackError(err); });
+    Sk.globals.update && Sk.misceval.callsimAsync(null, Sk.globals.update).then(() => {}, (err) => { handleCallbackError(err); });
   });
 
   const keys = ["K_0", "K_1", "K_2", "K_3", "K_4", "K_5", "K_6", "K_7", "K_8", "K_9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "SHIFT", "CTRL", "ALT", "LEFT", "UP", "RIGHT", "DOWN", "PAGEUP", "PAGEDOWN", "END", "HOME", "ESCAPE", "ENTER", "SPACE", "RETURN", "BACKSPACE", "INSERT", "DELETE", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F15"];
@@ -484,13 +505,13 @@ window.$builtinmodule = function() {
   // 键盘按下事件
   ModuleCache.windowListener.keydownListener = function (e) {
     keyboard[keysMap[e.key]] = true
-    Sk.globals.on_key_down && Sk.misceval.callsimAsync(null, Sk.globals.on_key_down, Sk.ffi.remapToPy(keysMap[e.key]));
+    Sk.globals.on_key_down && Sk.misceval.callsimAsync(null, Sk.globals.on_key_down, Sk.ffi.remapToPy(keysMap[e.key])).then(() => {}, (err) => { handleCallbackError(err); });
   }
   window.addEventListener('keydown', ModuleCache.windowListener.keydownListener)
 
   ModuleCache.windowListener.keyupListener = function (e) {
     keyboard[keysMap[e.key]] = false
-    Sk.globals.on_key_down && Sk.misceval.callsimAsync(null, Sk.globals.on_key_down, Sk.ffi.remapToPy(keysMap[e.key]));
+    Sk.globals.on_key_down && Sk.misceval.callsimAsync(null, Sk.globals.on_key_down, Sk.ffi.remapToPy(keysMap[e.key])).then(() => {}, (err) => { handleCallbackError(err); });
   }
   window.addEventListener('keyup', ModuleCache.windowListener.keyupListener)
   // 键盘名称
@@ -532,10 +553,25 @@ window.$builtinmodule = function() {
   app.view.addEventListener('mousedown', function(e) {
     const button = (mouseDownMap[e.button] || '').toLowerCase()
     insertData(buttons, button)
-    Sk.globals.on_mouse_down && Sk.misceval.callsimAsync(null, Sk.globals.on_mouse_down, Sk.ffi.remapToPy([
+    if (!Sk.globals.on_mouse_down) {
+      return;
+    }
+    var pos = Sk.ffi.remapToPy([
       transX(e.offsetX, true),
       transY(e.offsetY, true),
-    ]), Sk.ffi.remapToPy(button));
+    ]);
+    var call = null;
+    switch (Sk.globals.on_mouse_down.co_argcount) {
+      case 0:
+        call = Sk.misceval.callsimAsync(null, Sk.globals.on_mouse_down);
+        break;
+      case 1:
+        call = Sk.misceval.callsimAsync(null, Sk.globals.on_mouse_down, pos);
+        break;
+      default:
+        call = Sk.misceval.callsimAsync(null, Sk.globals.on_mouse_down, pos, Sk.ffi.remapToPy(button));
+    }
+    call.then(() => {}, (err) => { handleCallbackError(err); });
   })
   // 鼠标抬起事件
   app.view.addEventListener('mouseup', function(e) {
@@ -544,7 +580,7 @@ window.$builtinmodule = function() {
     Sk.globals.on_mouse_up && Sk.misceval.callsimAsync(null, Sk.globals.on_mouse_up, Sk.ffi.remapToPy([
       transX(e.offsetX, true),
       transY(e.offsetY, true),
-    ]), Sk.ffi.remapToPy(mouseDownMap[e.button]));
+    ]), Sk.ffi.remapToPy(mouseDownMap[e.button])).then(() => {}, (err) => { handleCallbackError(err); });
   })
   // // 禁用鼠标右键
   // document.oncontextmenu = function(){
@@ -562,7 +598,7 @@ window.$builtinmodule = function() {
       Sk.ffi.remapToPy([mousePos.x, mousePos.y]),
       Sk.ffi.remapToPy([mousePos.x, mousePos.y]),
       Sk.ffi.remapToPy(buttons)
-      );
+      ).then(() => {}, (err) => { handleCallbackError(err); });
   })
   // 鼠标滚轮事件
   app.view.addEventListener('wheel', function(e) {
