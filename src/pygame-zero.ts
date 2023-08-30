@@ -99,42 +99,42 @@ window.$builtinmodule = function() {
     $loc.topright = defineProperty(function(self) {
       return Sk.ffi.remapToPy(transPos([self.sprite.x + self.sprite.width/2, self.sprite.y - self.sprite.height/2], true))
     }, function (self, val) {
-      setActorPos(self, Sk.ffi.remapToJs(val), self.sprite.width/2, -self.sprite.height/2);
+      setActorPos(self, Sk.ffi.remapToJs(val), -self.sprite.width/2, self.sprite.height/2);
     });
     $loc.topleft = defineProperty(function(self) {
       return Sk.ffi.remapToPy(transPos([self.sprite.x - self.sprite.width/2, self.sprite.y - self.sprite.height/2], true))
     }, function (self, val) {
-      setActorPos(self, Sk.ffi.remapToJs(val), -self.sprite.width/2, -self.sprite.height/2);
+      setActorPos(self, Sk.ffi.remapToJs(val), self.sprite.width/2, self.sprite.height/2);
     });
     $loc.bottomleft = defineProperty(function(self) {
-      return Sk.ffi.remapToPy(transPos([self.sprite.x - self.sprite.width/2, self.sprite.y + self.sprite.height/2], true))
+      return Sk.ffi.remapToPy(transPos([self.sprite.x - self.sprite.width/2, self.sprite.y - self.sprite.height/2], true))
     }, function (self, val) {
-      setActorPos(self, Sk.ffi.remapToJs(val), -self.sprite.width/2, self.sprite.height/2);
+      setActorPos(self, Sk.ffi.remapToJs(val), self.sprite.width/2, -self.sprite.height/2);
     });
     $loc.bottomright = defineProperty(function(self) {
-      return Sk.ffi.remapToPy(transPos([self.sprite.x + self.sprite.width/2, self.sprite.y + self.sprite.height/2], true))
+      return Sk.ffi.remapToPy(transPos([self.sprite.x + self.sprite.width/2, self.sprite.y - self.sprite.height/2], true))
     }, function (self, val) {
-      setActorPos(self, Sk.ffi.remapToJs(val), self.sprite.width/2, self.sprite.height/2);
+      setActorPos(self, Sk.ffi.remapToJs(val), -self.sprite.width/2, -self.sprite.height/2);
     });
     $loc.midleft = defineProperty(function(self) {
       return Sk.ffi.remapToPy(transPos([self.sprite.x - self.sprite.width/2, self.sprite.y], true))
     }, function (self, val) {
-      setActorPos(self, Sk.ffi.remapToJs(val), -self.sprite.width/2, 0);
+      setActorPos(self, Sk.ffi.remapToJs(val), self.sprite.width/2, 0);
     });
     $loc.midright = defineProperty(function(self) {
       return Sk.ffi.remapToPy(transPos([self.sprite.x + self.sprite.width/2, self.sprite.y], true))
     }, function (self, val) {
-      setActorPos(self, Sk.ffi.remapToJs(val), self.sprite.width/2, 0);
+      setActorPos(self, Sk.ffi.remapToJs(val), -self.sprite.width/2, 0);
     });
     $loc.midtop = defineProperty(function(self) {
       return Sk.ffi.remapToPy(transPos([self.sprite.x, self.sprite.y - self.sprite.height/2], true))
     }, function (self, val) {
-      setActorPos(self, Sk.ffi.remapToJs(val), 0, -self.sprite.height/2);
+      setActorPos(self, Sk.ffi.remapToJs(val), 0, self.sprite.height/2);
     });
     $loc.midbottom = defineProperty(function(self) {
       return Sk.ffi.remapToPy(transPos([self.sprite.x, self.sprite.y + self.sprite.height/2], true))
     }, function (self, val) {
-      setActorPos(self, Sk.ffi.remapToJs(val), 0, self.sprite.height/2);
+      setActorPos(self, Sk.ffi.remapToJs(val), 0, -self.sprite.height/2);
     });
     $loc.pos = defineProperty(function(self) {
       return Sk.ffi.remapToPy(transPos([self.sprite.x, self.sprite.y], true))
@@ -143,22 +143,22 @@ window.$builtinmodule = function() {
     });
     $loc.center = $loc.pos;
     $loc.right = defineProperty((self) => {
-      return Sk.ffiRemapToPy(transX(self.sprite.x, true) + self.sprite.width/2)
+      return Sk.ffi.remapToPy(transX(self.sprite.x, true) + self.sprite.width/2)
     }, (self, val) => {
       self.sprite.x = transX(val.v, true) - self.sprite.width/2;
     });
     $loc.left = defineProperty((self) => {
-      return Sk.ffiRemapToPy(transX(self.sprite.x, true) - self.sprite.width/2)
+      return Sk.ffi.remapToPy(transX(self.sprite.x, true) - self.sprite.width/2)
     }, (self, val) => {
       self.sprite.x = transX(val.v, true) + self.sprite.width/2;
     });
     $loc.bottom = defineProperty((self) => {
-      return Sk.ffiRemapToPy(transY(self.sprite.y, true) + self.sprite.height/2)
+      return Sk.ffi.remapToPy(transY(self.sprite.y, true) + self.sprite.height/2)
     }, (self, val) => {
       self.sprite.y = transY(val.v, true) - self.sprite.height/2;
     });
     $loc.bottom = defineProperty((self) => {
-      return Sk.ffiRemapToPy(transY(self.sprite.y, true) - self.sprite.height/2)
+      return Sk.ffi.remapToPy(transY(self.sprite.y, true) - self.sprite.height/2)
     }, (self, val) => {
       self.sprite.y = transY(val.v, true) + self.sprite.height/2;
     });
@@ -374,11 +374,29 @@ window.$builtinmodule = function() {
       graph.endFill();
       app.stage.addChild(graph);
     })
+    // TODO: This doesn't quite work right...
+    $loc.blit = new Sk.builtin.func(function(self, image, pos) {
+      return new Sk.misceval.promiseToSuspension(new Promise((resolve) => {
+        var imageName = Sk.ffi.remapToJs(image);
+        pos = Sk.ffi.remapToJs(pos) || [];
+        textureRecources(imageName).then((texture) => {
+          const sprite = new Sprite(texture);
+          sprite.zOrder=1;
+          sprite.anchor.set(0.5);
+          sprite.x = transX(pos[0] || 0);
+          sprite.y = transY(pos[1] || 0);
+          setTimeout(() => {
+            app.stage.addChild(sprite);
+            resolve(void 0);
+          }, 100);
+        });
+      }));
+    });
   }, 'Screen', []));
   // 时间类
   mod.clock = Sk.misceval.callsimOrSuspend(Sk.misceval.buildClass(mod, function($gbl, $loc) {
+    ModuleCache.timerMap = new WeakMap();
     $loc.__init__ = new Sk.builtin.func(function(self) {
-      // ModuleCache.timerMap = new WeakMap();
     })
     $loc.schedule = new Sk.builtin.func(function(self, callback, delay) {
       ModuleCache.timerMap.set(callback, setTimeout(function() {
@@ -391,7 +409,7 @@ window.$builtinmodule = function() {
       }, delay.v * 1000))
     })
     $loc.schedule_unique = new Sk.builtin.func(function(self, callback, delay) {
-      if (self.timerMap.has(callback)) {
+      if (ModuleCache.timerMap.has(callback)) {
         clearTimeout(ModuleCache.timerMap.get(callback))
         clearInterval(ModuleCache.timerMap.get(callback))
       }
