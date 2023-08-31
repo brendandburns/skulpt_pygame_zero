@@ -2,7 +2,7 @@ const Sk = window.Sk;
 const PIXI = window.PIXI;
 import {
   loadScript,
-  textureRecources,
+  textureResources,
   defineGetter,
   defineProperty,
   hitTestRectanglePoint,
@@ -23,8 +23,8 @@ const CDN = {
 
 //Aliases
 const Application = PIXI.Application,
-loader = PIXI.loader,
-resources = PIXI.loader.resources,
+loader = PIXI.Loader.shared,
+resources = loader.resources,
 Sprite = PIXI.Sprite,
 Graphics = PIXI.Graphics,
 Text = PIXI.Text,
@@ -45,7 +45,7 @@ if (!hasReset) {
 }
 loader.pre((resource, next) => {
   resource.crossOrigin = 'anonymous';
-  resource.loadType = window.PIXI.loaders.Resource.LOAD_TYPE.XHR;
+  resource.loadType = window.PIXI.LoaderResource.LOAD_TYPE.XHR;
   next();
 });
 let width = 500;
@@ -75,7 +75,7 @@ window.$builtinmodule = function() {
       return new Sk.misceval.promiseToSuspension(new Promise(function(resolve) {
         actorName = Sk.ffi.remapToJs(actorName);
         pos = Sk.ffi.remapToJs(pos) || [];
-        textureRecources(actorName).then(function(texture) {
+        textureResources(actorName, loader).then(function(texture) {
           const sprite = new Sprite(texture)
           sprite.zOrder=1
           self.sprite = sprite;
@@ -171,7 +171,7 @@ window.$builtinmodule = function() {
       return Sk.ffi.remapToPy(self['sprite']['texture'])
     }, function (self, val) {
       return new Sk.misceval.promiseToSuspension(new Promise(function(resolve) {
-        textureRecources(val.v).then(function(texture) {
+        textureResources(val.v, loader).then(function(texture) {
           self['sprite']['texture'] = texture;
           resolve(void 0)
         })
@@ -181,10 +181,13 @@ window.$builtinmodule = function() {
       return Sk.ffi.remapToPy(self['sprite']['texture'])
       }, function (self, val) {
       return new Sk.misceval.promiseToSuspension(new Promise(function(resolve) {
-        textureRecources(self.actorName[val.v-1] || `./assets/${self.actorName}/造型${val.v}.png`).then(function(texture) {
-          self['sprite']['texture'] = texture;
-          resolve(void 0)
-        })
+        textureResources(
+          self.actorName[val.v-1] || `./assets/${self.actorName}/造型${val.v}.png`,
+          loader)
+          .then(function(texture) {
+            self['sprite']['texture'] = texture;
+            resolve(void 0)
+          })
       }))
     })
     $loc.distance_to = new Sk.builtin.func(function(self, pos) {
@@ -382,7 +385,7 @@ window.$builtinmodule = function() {
       return new Sk.misceval.promiseToSuspension(new Promise((resolve) => {
         var imageName = Sk.ffi.remapToJs(image);
         pos = Sk.ffi.remapToJs(pos) || [];
-        textureRecources(imageName).then((texture) => {
+        textureResources(imageName, loader).then((texture) => {
           const sprite = new Sprite(texture);
           sprite.zOrder=1;
           sprite.anchor.set(0.5);

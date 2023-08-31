@@ -159,7 +159,7 @@ export function hitTestRectangleRectangle(r1: Rect, r2: Rect): boolean {
 
 // 加载纹理
 const JsonLoadedMap = {};
-export function textureRecources (resource) {
+export function textureResources (resource, loader) {
   function loadResource(resource) {
     let list;
     if (Array.isArray(resource)) {
@@ -167,13 +167,21 @@ export function textureRecources (resource) {
       resource = list[0]
     }
     return new Promise((resolve, reject) => {
-      if (window.PIXI.utils.TextureCache[resource]) {
-        resolve(window.PIXI.utils.TextureCache[resource])
+      if (loader.resources[resource] != undefined && loader.resources[resource].texture != undefined) {
+        resolve(loader.resources[resource].texture);
       } else {
-        window.PIXI.loader.add(list || resource).load(function() {
-          const texture = window.PIXI.loader.resources[resource].texture;
-          resolve(texture)
-        });
+        for (var i = 0; i < 10; i++) {
+          try {
+            loader.add(list || resource).load(function() {
+              const texture = loader.resources[resource].texture;
+              resolve(texture)
+            });
+            return;
+          } catch (e) {
+            console.log(e);
+          }
+        }
+        reject('Failed to load texture');
       }
     })
   }
