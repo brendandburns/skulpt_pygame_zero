@@ -5,12 +5,15 @@ import {
   textureRecources,
   defineGetter,
   defineProperty,
-  hitTestRectangle,
+  hitTestRectanglePoint,
+  hitTestRectangleRectangle,
   genkwaFunc,
   translateTools,
   resetPygameZero,
   handleCallbackError,
   setActorPos,
+  Point,
+  Rect,
 } from './utils'
 
 // Third-party plugins
@@ -201,14 +204,14 @@ window.$builtinmodule = function() {
       const z = Math.sqrt(x*x+y*y);
       return Sk.ffi.remapToPy(Math.round(Math.asin(y/z)/Math.PI*180))
     })
-    $loc.collidepoint = new Sk.builtin.func(function(self, pos) {
-      return hitTestRectangle(self.sprite, transPos(Sk.ffi.remapToJs(pos)))
+    $loc.collidepoint = new Sk.builtin.func(function(self, pos: Point) {
+      return hitTestRectanglePoint(self.sprite, transPos(Sk.ffi.remapToJs(pos)))
     })
     $loc.collide_actor = new Sk.builtin.func(function(self, actor) {
-      return hitTestRectangle(self.sprite, actor.sprite)
+      return hitTestRectangleRectangle(self.sprite, actor.sprite)
     })
     $loc.colliderect = new Sk.builtin.func(function(self, actor) {
-      return hitTestRectangle(self.sprite, actor.sprite)
+      return hitTestRectangleRectangle(self.sprite, actor.sprite)
     })
     $loc.remove = new Sk.builtin.func(function(self) {
       app.stage.removeChild(self.sprite);

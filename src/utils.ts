@@ -96,7 +96,7 @@ export const translateTools = function(app) {
       // }
       return y;
     },
-    transPos(pos, isReserve = false){
+    transPos(pos: Point, isReserve = false): Point {
       if (!pos) {
         return pos
       }
@@ -122,64 +122,40 @@ export const translateTools = function(app) {
   return tools;
 }
 
-// 碰撞检测函数
-export function hitTestRectangle(r1, r2) {
-  // 如果r2是坐标点
-  if (Array.isArray(r2)) {
-    r2.x = r2[0];
-    r2.y = r2[1];
-    r2.width = 0;
-    r2.height = 0;
-  }
-
-  //Define the variables we'll need to calculate
-  let hit;
-
-  //hit will determine whether there's a collision
-  hit = false;
-
-  //Find the center points of each sprite
-  r1.centerX = r1.x + r1.width / 2;
-  r1.centerY = r1.y + r1.height / 2;
-  r2.centerX = r2.x + r2.width / 2;
-  r2.centerY = r2.y + r2.height / 2;
-
-  //Find the half-widths and half-heights of each sprite
-  r1.halfWidth = r1.width / 2;
-  r1.halfHeight = r1.height / 2;
-  r2.halfWidth = r2.width / 2;
-  r2.halfHeight = r2.height / 2;
-
-  //Calculate the distance vector between the sprites
-  const vx = r1.centerX - r2.centerX;
-  const vy = r1.centerY - r2.centerY;
-
-  //Figure out the combined half-widths and half-heights
-  const combinedHalfWidths = r1.halfWidth + r2.halfWidth;
-  const combinedHalfHeights = r1.halfHeight + r2.halfHeight;
-
-  //Check for a collision on the x axis
-  if (Math.abs(vx) < combinedHalfWidths) {
-
-    //A collision might be occuring. Check for a collision on the y axis
-    if (Math.abs(vy) < combinedHalfHeights) {
-
-      //There's definitely a collision happening
-      hit = true;
-    } else {
-
-      //There's no collision on the y axis
-      hit = false;
-    }
-  } else {
-
-    //There's no collision on the x axis
-    hit = false;
-  }
-
-  //`hit` will be either `true` or `false`
-  return hit;
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
+
+export type Point = Array<number>;
+
+export function hitTestRectanglePoint(r: Rect, p: Point): boolean {
+  return p[0] > r.x && p[0] < r.x + r.width && p[1] > r.y && p[1] < r.y + r.height;
+}
+
+export function hitTestRectangleRectangle(r1: Rect, r2: Rect): boolean {
+  if (r1.x < r2.x + r2.width &&
+      r1.x + r1.width > r2.x &&
+      r1.y < r2.y + r2.height &&
+      r1.y + r1.height > r2.y) {
+        return true;
+  }
+
+  // TODO: This doesn't catch cases where there is overlap, but none of
+  // the corners are inside the other rectangle. This is unlikely but
+  // possible. The right thing to do is line intersection of all pairs of edges
+  return
+    hitTestRectanglePoint(r1, [r2.x, r2.y]) ||
+    hitTestRectanglePoint(r1, [r2.x, r2.y + r2.height]) ||
+    hitTestRectanglePoint(r1, [r2.x + r2.width, r2.y + r2.height]) ||
+    hitTestRectanglePoint(r1, [r2.x + r2.width, r2.y]) ||
+    hitTestRectanglePoint(r2, [r1.x, r1.y]) ||
+    hitTestRectanglePoint(r2, [r1.x, r1.y + r1.height]) ||
+    hitTestRectanglePoint(r2, [r1.x + r1.width, r1.y + r1.height]) ||
+    hitTestRectanglePoint(r2, [r1.x + r1.width, r1.y]) ||
+  }
 
 // 加载纹理
 const JsonLoadedMap = {};
@@ -209,11 +185,11 @@ export function textureRecources (resource) {
         return res.json()
       }).then((res) => {
         const prefix = resource.replace('index.json', '');
-        const resoureList = res.map((item) => {
+        const resourceList = res.map((item) => {
           return prefix + item
         })
-        JsonLoadedMap[resource] = resoureList;
-        return loadResource(resoureList)
+        JsonLoadedMap[resource] = resourceList;
+        return loadResource(resourceList)
       })
     }
   } else {
