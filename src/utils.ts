@@ -132,14 +132,21 @@ export interface Rect {
 export type Point = Array<number>;
 
 export function hitTestRectanglePoint(r: Rect, p: Point): boolean {
-  return p[0] > r.x && p[0] < r.x + r.width && p[1] > r.y && p[1] < r.y + r.height;
+  var rx = r.x - r.width / 2;
+  var ry = r.y - r.width / 2;
+  return p[0] > rx && p[0] < rx + r.width && p[1] > ry && p[1] < ry + r.height;
 }
 
 export function hitTestRectangleRectangle(r1: Rect, r2: Rect): boolean {
-  if (r1.x < r2.x + r2.width &&
-      r1.x + r1.width > r2.x &&
-      r1.y < r2.y + r2.height &&
-      r1.y + r1.height > r2.y) {
+  var r1x = r1.x - r1.width / 2;
+  var r1y = r1.y - r1.height / 2;
+  var r2x = r2.x - r2.width / 2;
+  var r2y = r2.y - r2.height / 2;
+
+  if (r1x < r2x + r2.width &&
+      r1x + r1.width > r2x &&
+      r1y < r2y + r2.height &&
+      r1y + r1.height > r2y) {
         return true;
   }
 
@@ -147,15 +154,15 @@ export function hitTestRectangleRectangle(r1: Rect, r2: Rect): boolean {
   // the corners are inside the other rectangle. This is unlikely but
   // possible. The right thing to do is line intersection of all pairs of edges
   return
-    hitTestRectanglePoint(r1, [r2.x, r2.y]) ||
-    hitTestRectanglePoint(r1, [r2.x, r2.y + r2.height]) ||
-    hitTestRectanglePoint(r1, [r2.x + r2.width, r2.y + r2.height]) ||
-    hitTestRectanglePoint(r1, [r2.x + r2.width, r2.y]) ||
-    hitTestRectanglePoint(r2, [r1.x, r1.y]) ||
-    hitTestRectanglePoint(r2, [r1.x, r1.y + r1.height]) ||
-    hitTestRectanglePoint(r2, [r1.x + r1.width, r1.y + r1.height]) ||
-    hitTestRectanglePoint(r2, [r1.x + r1.width, r1.y]) ||
-  }
+    hitTestRectanglePoint(r1, [r2x, r2y]) ||
+    hitTestRectanglePoint(r1, [r2x, r2y + r2.height]) ||
+    hitTestRectanglePoint(r1, [r2x + r2.width, r2y + r2.height]) ||
+    hitTestRectanglePoint(r1, [r2x + r2.width, r2y]) ||
+    hitTestRectanglePoint(r2, [r1x, r1y]) ||
+    hitTestRectanglePoint(r2, [r1x, r1y + r1.height]) ||
+    hitTestRectanglePoint(r2, [r1x + r1.width, r1y + r1.height]) ||
+    hitTestRectanglePoint(r2, [r1x + r1.width, r1y])
+}
 
 // 加载纹理
 const JsonLoadedMap = {};
