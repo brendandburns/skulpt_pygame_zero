@@ -20,7 +20,7 @@ export const PyGameZero = {
   load: function(file) {
     return Sk.misceval.promiseToSuspension(
       new Promise((resolve, reject) => {
-        loadScript('https://cdn.bootcdn.net/ajax/libs/pixi.js/5.3.4/pixi.min.js', 'PIXI').then(() => {
+        loadScript('https://cdn.jsdelivr.net/npm/pixi.js@5.x/dist/pixi.min.js', 'PIXI').then(() => {
           fetch(libList[file]).then(
             function (resp){ 
               const result = resp.text();

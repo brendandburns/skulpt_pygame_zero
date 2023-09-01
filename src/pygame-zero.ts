@@ -280,7 +280,7 @@ window.$builtinmodule = function() {
       graph.endFill();
       app.stage.addChild(graph);
     })
-    $loc.rect =  new Sk.builtin.func(function(self, ...args) {
+    $loc.rect = new Sk.builtin.func(function(self, ...args) {
       if (Sk.abstr.typeName(args[0]) === "Rect") {
         const [rect, color] = args;
         graph.lineStyle(self.size, transColor(Sk.ffi.remapToJs(color)), 1);
@@ -355,6 +355,7 @@ window.$builtinmodule = function() {
         fontSize: fontsize,
         fill: color,
       });
+      // TODO: Bitmaped text here?
       const basicText = new PIXI.Text(str.v, style);
       self.basicText = basicText
       basicText.anchor.set(0.5);
@@ -362,6 +363,7 @@ window.$builtinmodule = function() {
         basicText.x = pos[0];
         basicText.y = pos[1];
       }
+      basicText.destroyOnClear = true;
       app.stage.addChild(basicText);
     }, true))
   }, 'Draw', []);
@@ -371,7 +373,13 @@ window.$builtinmodule = function() {
     $loc.draw = Sk.misceval.callsimOrSuspend(mod.draw)
     $loc.clear = new Sk.builtin.func(function(self) {
       // app.destroy();
-      while(app.stage.children.length > 0){   var child = app.stage.getChildAt(0);  app.stage.removeChild(child);}
+      while(app.stage.children.length > 0){
+        var child = app.stage.getChildAt(0);
+        app.stage.removeChild(child);
+        if (child.destroy && child.destroyOnClear) {
+          child.destroy();
+        }
+      }
     })
     $loc.fill = new Sk.builtin.func(function(self, color) {
       graph.clear()
