@@ -346,10 +346,10 @@ window.$builtinmodule = function() {
     $loc.text = new Sk.builtin.func(genkwaFunc(function(args, kwa) {
       kwa = Sk.ffi.remapToJs(kwa);
       let [self, str, pos, color, fontsize, fontname] = args;
-      color = transColor(Sk.ffi.remapToJs(color || kwa.color));
-      fontsize = Sk.ffi.remapToJs(fontsize || kwa.fontsize);
-      fontname = Sk.ffi.remapToJs(fontname || kwa.fontname)
-      pos = transPos(Sk.ffi.remapToJs(pos))
+      color = transColor(color ? Sk.ffi.remapToJs(color) : kwa.color);
+      fontsize = fontsize ? Sk.ffi.remapToJs(fontsize) : kwa.fontsize;
+      fontname = fontname ? Sk.ffi.remapToJs(fontname) : kwa.fontname;
+      pos = transPos(pos ? Sk.ffi.remapToJs(pos) : kwa.pos);
       const style = new PIXI.TextStyle({
         fontFamily: fontname || 'PingFang SC',
         fontSize: fontsize,
@@ -389,21 +389,21 @@ window.$builtinmodule = function() {
       app.stage.addChild(graph);
     })
     // TODO: This doesn't quite work right...
-    $loc.blit = new Sk.builtin.func(function(self, image, pos) {
+    $loc.blit = new Sk.builtin.func((self, image, pos) => {
       return new Sk.misceval.promiseToSuspension(new Promise((resolve) => {
-        var imageName = Sk.ffi.remapToJs(image);
-        pos = Sk.ffi.remapToJs(pos) || [];
-        textureResources(imageName, loader).then((texture) => {
-          const sprite = new Sprite(texture);
-          sprite.zOrder=1;
+        const imageName = Sk.ffi.remapToJs(image);
+        const position: Point = Sk.ffi.remapToJs(pos) || [0, 0];
+        textureResources(imageName, loader).then(function(texture) {
+          const sprite = new Sprite(texture)
+          sprite.zOrder=2;
           sprite.anchor.set(0.5);
-          sprite.x = transX(pos[0] || 0);
-          sprite.y = transY(pos[1] || 0);
-          setTimeout(() => {
-            app.stage.addChild(sprite);
-            resolve(void 0);
-          }, 100);
-        });
+          sprite.x = transX(position[0]);
+          sprite.y = transY(position[1]);
+          sprite.destroyOnClear = true;
+          console.log('adding child');
+          app.stage.addChild(sprite);
+          resolve(void 0)
+        });  
       }));
     });
   }, 'Screen', []));
@@ -576,7 +576,17 @@ window.$builtinmodule = function() {
   // 键盘按下事件
   ModuleCache.windowListener.keydownListener = function (e) {
     keyboard[keysMap[e.key]] = true
-    Sk.globals.on_key_down && Sk.misceval.callsimAsync(null, Sk.globals.on_key_down, Sk.ffi.remapToPy(keysMap[e.key])).then(() => {}, (err) => { handleCallbackError(err); });
+    if (Sk.globals.on_key_down) {
+      var promise = null;
+      switch (Sk.globals.on_key_down.co_argcount) {
+        case 0:
+          promise = Sk.misceval.callsimAsync(null, Sk.globals.on_key_down);
+          break;
+        default:
+          promise =  Sk.misceval.callsimAsync(null, Sk.globals.on_key_down, Sk.ffi.remapToPy(keysMap[e.key]);
+      }
+      promise.then(() => {}, (err) => { handleCallbackError(err); });
+    }
   }
   window.addEventListener('keydown', ModuleCache.windowListener.keydownListener)
 
